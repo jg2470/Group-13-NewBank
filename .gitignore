@@ -1,0 +1,29 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Datasource local storage ignored files
+/.idea
+/classes
+# Editor-based HTTP Client requests
+/httpRequests/
+# Micellaenous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.vscode/
+.code-workspace
+.history
+.svn/
+*.iml
+.idea/
+/.idea
+/classes
+.classpath
+NewBank.iml
+.project
+ExampleClient/
+out/

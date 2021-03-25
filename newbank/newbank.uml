@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>newbank</OriginalElement>
+  <nodes>
+    <node x="483.0" y="0.0">newbank.server.Customer</node>
+    <node x="610.0" y="515.0">newbank.server.NewBankClientHandler</node>
+    <node x="236.0" y="880.0">newbank.server.NewBankServer</node>
+    <node x="223.0" y="305.0">newbank.server.Account.InstructionType</node>
+    <node x="0.0" y="515.0">newbank.server.NewBank</node>
+    <node x="332.0" y="515.0">newbank.client.ExampleClient</node>
+    <node x="0.0" y="261.0">newbank.server.Account.AccountType</node>
+    <node x="0.0" y="880.0">newbank.server.CustomerID</node>
+    <node x="72.5" y="0.0">newbank.server.Account</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="newbank.server.Account.InstructionType" target="newbank.server.Account">
+      <point x="0.0" y="-60.5" />
+      <point x="330.5" y="236.0" />
+      <point x="287.75" y="236.0" />
+      <point x="71.75" y="105.5" />
+    </edge>
+    <edge source="newbank.server.Account.AccountType" target="newbank.server.Account">
+      <point x="0.0" y="-104.5" />
+      <point x="101.5" y="236.0" />
+      <point x="144.25" y="236.0" />
+      <point x="-71.75" y="105.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.5587084148727984" x="414.0" y="501.0" />
+  <SelectedNodes>
+    <node>newbank.server.Customer</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Constructors</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
