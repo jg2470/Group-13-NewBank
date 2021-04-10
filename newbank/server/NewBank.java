@@ -9,6 +9,7 @@ import java.util.*;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Double.parseDouble;
+import static newbank.server.Transaction.TransactionType; //Enum bank account types to check valid accounts
 
 public class NewBank {
 	
@@ -29,6 +30,7 @@ public class NewBank {
 	protected Double maxMicroLoanRate = 7.25;
 	protected int maxLoanDuration = 104; //number of weeks
 	protected int minLoanDuration = 1; // 1 week duration
+	private String[] errorMessage;
 
 	public NewBank() {
 		customers = new HashMap<>();
@@ -39,6 +41,7 @@ public class NewBank {
 		accountMicroloansOffered = new HashMap<>();
 		accountMicroloansReceived = new HashMap<>();
 		transactionsList = new ArrayList<>();
+		errorMessage = new String[1];
 		fillHashMap_fromDB();
 		readTransactionsFromDB();
 		Interest interest = new Interest(customers,transactions);
@@ -219,8 +222,10 @@ public class NewBank {
 				return "SUCCESS";
 			case "MOVE":
 				// MOVE <Amount> <From> <To>
-				if (requestSplit.length != 4){
-					return "Error: Invalid input. To move money between accounts, please use the following" +
+				if (moveInputStringError(requestSplit)){
+					return "Error:" + errorMessage[0] + "\nInvalid input. To move money between accounts, please use " +
+							"the " +
+							"following" +
 							" input format: \"MOVE <Amount> <From> <To>\"";
 				} else {
 					Account accountFrom = returnAccount(requestSplit[2], customers.get(customer.getKey()));
@@ -228,8 +233,6 @@ public class NewBank {
 					Double amount = Double.parseDouble(requestSplit[1]);
 					if (accountFrom == null || accountTo == null) {
 						return "Error: One or more accounts not recognised. Please check account details and try again.";
-					} else if (amount <= 0){
-						return "Error: Invalid amount specified. Transfers must be at least £0.01";
 					} else if (!sufficientFunds(accountFrom, amount)){
 						return "Error: insufficient funds available to carry out transfer";
 					} else {
@@ -352,8 +355,8 @@ public class NewBank {
 				// MICROLOAN <Amount> <From User's Account> <To Payee's UserName>
 				if (requestSplit.length != 4){
 					return "FAIL";
-				} else if (Integer.parseInt(requestSplit[1]) <= 0){
-					return "Error: Invalid amount specified. Transfers must be at least £0.01";
+				} else if (Integer.parseInt(requestSplit[1]) <= 0 || Integer.parseInt(requestSplit[1]) > 1000){
+					return "Error: Invalid amount specified. Loans must be at least £0.01 and at most £1000";
 				} else {
 					String payeeAccountType = requestSplit[2];
 					Customer sender = customers.get(customer.getKey());
@@ -376,11 +379,10 @@ public class NewBank {
 				else if(didDatabaseChange){
 					try {
 						save.saveSession(customers);
-	
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					return "ACTION CONFIRMED!";
+					return "CHANGES CONFIRMED!";
 				}
 			case "DELETE":
 				// DELETE <Customer ID>
@@ -399,10 +401,8 @@ public class NewBank {
 								didDatabaseChange = true;
 								return "Customer ID# " + object.getCustomerId() + " DELETED!";
 							}
-							else{
-								return "ERROR. Cannot find Customer ID.";
-							}
 						}
+						return "ERROR. Cannot find Customer ID.";
 					}
 					else if(requestSplit.length == 3){
 						for(Map.Entry<String, Customer> record :customers.entrySet()){
@@ -553,7 +553,6 @@ public class NewBank {
 		if (user == null || payee == null || !sufficientFunds(user, payment)){
 			return "FAIL";
 		} else {
-			//try{
 				user.modifyBalance(payment, Account.InstructionType.WITHDRAW);
 				payee.modifyBalance(payment, Account.InstructionType.DEPOSIT);
 				LocalDateTime dateTime = LocalDateTime.now();
@@ -598,8 +597,6 @@ public class NewBank {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			//}catch(Exception e){
-			//}
 
 			return "SUCCESS";
 		}
@@ -608,18 +605,20 @@ public class NewBank {
 	protected String getAvailableCommands(String name){
 		String commands = "";
 		if(name.equals("staff")){
-			commands += "\n Available commands: \n";
+			commands += "\nAvailable commands: \n";
 			commands += "* DELETE <customer ID> \n";
 			commands += "* DELETE <customer ID> <account type> \n";
 			commands += "* AUDITREPORT \n";
+			commands += "* HELP \n";
+			commands += "* HELP <command name> \n";
 			commands += "* CONFIRM \n";
-			commands += "* LOGOUT \n";
+			commands += "* LOGOUT";
 		}
 		else if(name.equals("general")){
-			commands += "\n Available commands: \n";
+			commands += "\nAvailable commands: \n";
 			commands += "* NEWACCOUNT <account type> \n";
 			commands += "* SHOWMYACCOUNTS \n";
-			commands += "* MOVE <amount> <from> <to> \n";
+			commands += "* MOVE <amount> <from account type> <to account type> \n";
 			commands += "* DEPOSIT <amount> <to account type> \n";
 			commands += "* WITHDRAW <amount> <from account type> \n";
 			commands += "* SHOWTRANSACTIONS \n";
@@ -631,7 +630,7 @@ public class NewBank {
 			commands += "* HELP \n";
 			commands += "* HELP <command name> \n";
 			commands += "* CONFIRM \n";
-			commands += "* LOGOUT \n";
+			commands += "* LOGOUT";
 		}
 		return commands;
 	}
@@ -653,6 +652,7 @@ public class NewBank {
 				break;
 			case "WITHDRAW":
 				description += "WITHDRAW 500 savings - Will withdraw 500 from Savings account.";
+				break;
 			case "SHOWTRANSACTIONS":
 				description += "SHOWTRANSACTIONS - Will display all incoming and outgoing transactions from this account.";
 				break;
@@ -669,7 +669,7 @@ public class NewBank {
 				description += "CREATELOANREQUEST 2000 5 10 20 - Will create a loan request for 2000 dollars at 5% interest rate for 10 installments over 20 weeks.";
 				break;
 			case "LOANCALCULATOR":
-				description += "LOANCALCULATOR <Amount> <interestRate> <Installments> <Duration in weeks> - calculates the loan details for entered parameters.";
+				description += "LOANCALCULATOR 2000 5 10 20 - Calculates the loan details for entered parameters.";
 				break;
 			case "DELETE":
 				description += "DELETE 489418943 - Will delete all records pertinent to the customer with ID# 489418943. Accessible by staff members only. \n";
@@ -677,12 +677,14 @@ public class NewBank {
 				break;
 			case "AUDITREPORT":
 				description += "Generates a report of all banking activity. Accessible by staff members only.";
+				break;
 			case "CONFIRM":
 				description += "Will save and confirm all session actions into the database.";
 				break;
 			case "LOGOUT":
 				description += "Will close your banking session and exit the application";
 				break;
+			default: return "UNRECOGNIZED COMMAND.";
 		}
 		return description;
 	}
@@ -741,6 +743,10 @@ public class NewBank {
 		if (Double.parseDouble(requestSplit[1]) > maxLoanAmount){
 			return true;
 		}
+
+		if (Double.parseDouble(requestSplit[1]) < 0){
+		    return true;
+        }
 		if (Double.parseDouble(requestSplit[2]) > maxMicroLoanRate || Double.parseDouble(requestSplit[2]) < 0){
 			return true;
 		}
@@ -749,6 +755,7 @@ public class NewBank {
 		}
 		if ((Integer.parseInt(requestSplit[4])*12)/(52*Integer.parseInt(requestSplit[4])) > 1){
 			return true;
+
 		}
 		return false;
 	}
@@ -759,6 +766,10 @@ public class NewBank {
 		if (Double.parseDouble(requestSplit[1]) > maxLoanAmount){
 			return "You have exceeded the allowable loan amount request of " + maxLoanAmount + " pounds";
 		}
+
+		if(Double.parseDouble(requestSplit[1]) < 0){
+		    return "You cannot have a negative loan amount, please add value greater than zero";
+        }
 		if (Double.parseDouble(requestSplit[2]) > maxMicroLoanRate || Double.parseDouble(requestSplit[2]) < 0){
 			return "Interest rate must between 0 - " + maxMicroLoanRate +" %";
 		}
@@ -769,5 +780,22 @@ public class NewBank {
 			return "Installment payments must be at least made monthly";
 		}
 		return "False";
+	}
+	private boolean moveInputStringError (String [] requestSplit){
+		if (requestSplit.length != 4) {
+			errorMessage[0] = " - Improper Number of Arguments";
+			return true;
+		}
+		if (Double.parseDouble(requestSplit[1]) <= 0){
+			errorMessage[0] = " - Invalid amount specified. Transfers must be at least £0.01";
+			return true;
+		}
+		List t = Arrays.asList(TransactionType.values());
+		if(!t.contains(requestSplit[2]) || !t.contains(requestSplit[3])){
+			errorMessage[0] = " - One or more accounts not recognised. Please check account details and try " +
+					"again.";
+			return true;
+		}
+		return false;
 	}
 }
