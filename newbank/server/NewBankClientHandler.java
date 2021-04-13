@@ -69,6 +69,9 @@ public class NewBankClientHandler extends Thread{
 							System.out.println("Request from " + customer.getKey());
 							String response = bank.processRequest(customer, request);
 							out.println(response);
+							if (response.equals("SUCCESS. You have been logged out.")){
+								break;
+							}
 							timedExit("stop", task);
 							task = newTask();
 							timedExit("start", task);
@@ -78,6 +81,7 @@ public class NewBankClientHandler extends Thread{
 						out.println("Log In Failed");
 						run();
 					}
+					break;
 				default:
 					out.println("Invalid selection. Try Again.");
 					run();

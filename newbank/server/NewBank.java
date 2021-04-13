@@ -181,7 +181,10 @@ public class NewBank {
 	// commands from the NewBank customer are processed in this method
 	public synchronized String processRequest(CustomerID customer, String request) throws FileNotFoundException {
 		if(customers.containsKey(customer.getKey())) {
-			String[] requestSplit = request.split(" ");
+			if (request == null){
+				request = "NULL";
+			}
+			String[] requestSplit = request.split(" ");;
 			switch(requestSplit[0]) {
 			case "SHOWMYACCOUNTS":
 				return showMyAccounts(customer);
