@@ -472,16 +472,11 @@ public class NewBank {
 					return customers.get(customer.getKey()).showTransactions();
 				}
 			case "LOGOUT":
-				logOut();
+				return "SUCCESS. You have been logged out.";
 			default : return "UNRECOGNIZED COMMAND.";
 			}
 		}
 		return "UNRECOGNIZED COMMAND.";
-	}
-
-	private void logOut(){
-		System.out.println("\nSUCCESS. You have been logged out.");
-		System.exit(0);
 	}
 
 	private String showMyAccounts(CustomerID customer) {

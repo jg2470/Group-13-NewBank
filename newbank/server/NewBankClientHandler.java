@@ -135,8 +135,7 @@ public class NewBankClientHandler extends Thread{
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.out.println("You have been logged out due to inactivity");
-				System.exit(0);
+				out.println("You have been logged out due to inactivity");
 			}
 		};
 	}

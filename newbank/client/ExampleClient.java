@@ -27,6 +27,9 @@ public class ExampleClient extends Thread{
 						String response = bankServerIn.readLine();
 						if (response != null){
 							System.out.println(response);
+							if (response.equals("SUCCESS. You have been logged out.") || response.equals("You have been logged out due to inactivity")){
+								System.exit(0);
+							}
 						}
 					}
 				} catch (IOException e) {
